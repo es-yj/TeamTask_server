@@ -75,6 +75,13 @@ export class ProjectService {
     }
   }
 
+  async removeProject(id: number) {
+    try {
+      await this.projectRepository.removeProject(id);
+    } catch (error) {
+      throw new InternalServerErrorException('프로젝트 삭제에 실패했습니다.');
+    }
+  }
   // remove(id: number) {
   //   return `This action removes a #${id} project`;
   // }

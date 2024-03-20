@@ -7,7 +7,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 @CustomRepository(Project)
 export class ProjectRepository extends Repository<Project> {
   async createProject(createProjectDto: CreateProjectDto): Promise<void> {
-    const newProject = await this.save(createProjectDto);
+    const newProject = await this.create(createProjectDto);
     await this.save(newProject);
   }
 
@@ -26,5 +26,9 @@ export class ProjectRepository extends Repository<Project> {
     updateProjectDto: UpdateProjectDto,
   ): Promise<void> {
     await this.update(id, updateProjectDto);
+  }
+
+  async removeProject(id: number): Promise<void> {
+    await this.delete(id);
   }
 }

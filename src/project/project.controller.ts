@@ -12,7 +12,7 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/get-user.decorator';
 
 @ApiTags('Project')
@@ -33,12 +33,14 @@ export class ProjectController {
     return await this.projectService.findAllProjects();
   }
 
+  @ApiParam({ name: 'id', required: true, description: 'project id' })
   @ApiOperation({ summary: '개별 프로젝트 조회' })
   @Get(':id')
   async getProjectDetail(@Param('id') id: string) {
     return this.projectService.getProjectDetail(+id);
   }
 
+  @ApiParam({ name: 'id', required: true, description: 'project id' })
   @ApiOperation({ summary: '프로젝트 수정' })
   @Patch(':id')
   async updateProject(
@@ -46,7 +48,6 @@ export class ProjectController {
     @Body() updateProjectDto: UpdateProjectDto,
     @GetUser() userId: number,
   ) {
-    console.log(userId);
     return await this.projectService.updateProject(
       +id,
       userId,
@@ -54,8 +55,10 @@ export class ProjectController {
     );
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.projectService.remove(+id);
-  // }
+  @ApiParam({ name: 'id', required: true, description: 'project id' })
+  @ApiOperation({ summary: '프로젝트 삭제' })
+  @Delete(':id')
+  async removeProject(@Param('id') id: string) {
+    return await this.projectService.removeProject(+id);
+  }
 }

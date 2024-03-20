@@ -3,7 +3,7 @@ import { CreateProjectDto } from './create-project.dto';
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateProjectDto extends PartialType(CreateProjectDto) {
+export class UpdateProjectDto {
   @ApiProperty({ description: '프로젝트 상태', required: false })
   @IsOptional()
   @IsString()

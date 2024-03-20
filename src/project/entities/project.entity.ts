@@ -5,6 +5,8 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
@@ -14,13 +16,13 @@ export class Project extends BaseEntity {
   id: number;
 
   @Column()
-  manager_id: number;
+  managerId: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  creation_stage: string;
+  creationStage: string;
 
   @Column({ type: 'varchar', length: 255 })
-  project_id: string;
+  projectId: string;
 
   @Column({ type: 'varchar', length: 255 })
   client: string;
@@ -29,19 +31,19 @@ export class Project extends BaseEntity {
   status: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  progress_stage: string;
+  progressStage: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  build_stage: string;
+  buildStage: string;
 
   @Column()
-  slack_url: string;
+  slackUrl: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  created_at: string;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  updated_at: string;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'manager_id' })
