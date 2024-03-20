@@ -1,7 +1,16 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+  Req,
+  Body,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './strategy/google-oauth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CreateUserDto } from './dto/googleuser.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -17,5 +26,11 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Request() req) {
     return await this.authService.googleLogin(req);
+  }
+
+  @ApiOperation({ summary: '회원가입' })
+  @Post('signup')
+  async signup(@Body() createUserDto: CreateUserDto) {
+    return await this.authService.signUp(createUserDto);
   }
 }

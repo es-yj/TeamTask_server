@@ -1,7 +1,15 @@
 import { Project } from 'src/project/entities/project.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  BaseEntity,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 @Entity()
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -19,6 +27,15 @@ export class User {
 
   @Column({ nullable: true })
   team?: number;
+
+  @Column({ nullable: true, default: 'pending' })
+  status: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @OneToMany(() => Project, (project) => project.manager)
   projects: Project[];

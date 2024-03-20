@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { CustomRepository } from 'src/common/typeorm-repository.decorator';
 import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
-import { GoogleUser } from 'src/auth/dto/googleuser.dto';
+import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
 
 @CustomRepository(User)
 export class UserRepository extends Repository<User> {
@@ -12,6 +12,10 @@ export class UserRepository extends Repository<User> {
 
     const user = await this.findOne({ where: query });
     return user;
+  }
+
+  async signUp(createUserDto: CreateUserDto): Promise<void> {
+    await this.save(createUserDto);
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
