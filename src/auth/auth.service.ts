@@ -4,6 +4,7 @@ import { UserRepository } from 'src/user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/entities/user.entity';
+import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,9 @@ export class AuthService {
     try {
       const { email } = googleReq.user;
       let user = await this.userRepository.findUserByEmail(email);
-      const url = user ? 'http://localhost:3000' : 'http://localhost:3000/team';
+      const url = user
+        ? 'http://localhost:3000'
+        : 'http://localhost:3000/account/team';
 
       if (!user) {
         user = await this.userRepository.save(googleReq.user);
@@ -31,15 +34,15 @@ export class AuthService {
     }
   }
 
-  // 팀과 가입 승인 상태 업데이트
-  private async updateUserTeamAndStatus(
-    user: User,
-    team: number,
-    status: string,
-  ) {
-    user.team = team;
-    user.status = status;
-    await this.userRepository.save(user);
+  async updateTeamInfo(userId, updateTeamInfoDto: UpdateTeamInfoDto) {
+    try {
+      return await this.userRepository.updateUserTeamInfo(
+        userId,
+        updateTeamInfoDto,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException('팀 정보 입력에 실패했습니다.');
+    }
   }
 
   getToken(user: User) {

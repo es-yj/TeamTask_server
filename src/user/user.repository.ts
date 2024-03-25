@@ -3,6 +3,7 @@ import { CustomRepository } from 'src/common/typeorm-repository.decorator';
 import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
 import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
+import { UpdateTeamInfoDto } from 'src/auth/dto/update-team-info.dto';
 
 @CustomRepository(User)
 export class UserRepository extends Repository<User> {
@@ -45,5 +46,12 @@ export class UserRepository extends Repository<User> {
     });
 
     return userWithProjects.projects;
+  }
+
+  async updateUserTeamInfo(
+    userId: number,
+    updateTeamInfoDto: UpdateTeamInfoDto,
+  ): Promise<void> {
+    await this.update(userId, updateTeamInfoDto);
   }
 }
