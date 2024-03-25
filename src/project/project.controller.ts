@@ -16,7 +16,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/get-user.decorator';
 
 @ApiTags('Project')
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard('access'))
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}

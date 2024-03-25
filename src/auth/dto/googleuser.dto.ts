@@ -32,7 +32,6 @@ export class CreateUserDto {
   picture: string;
 
   @ApiProperty()
-  @IsNotEmpty({ message: '팀은 필수적으로 입력해야 합니다.' })
   @IsNumber()
   team: number;
 }

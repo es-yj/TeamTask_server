@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { Project } from 'src/project/entities/project.entity';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -51,4 +52,11 @@ export class UserService {
 
     return userWithProjects;
   }
+
+  // async refreshTokenMatches(refreshToken: string, id: number): Promise<User> {
+  //   const user = await this.findUserById(id);
+
+  //   const isMatches = this.isMatch(refreshToken, user.refreshToken);
+  //   if (isMatches) return user;
+  // }
 }

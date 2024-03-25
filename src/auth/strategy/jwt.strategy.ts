@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 // access token 검증 전략
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'access') {
   constructor(private readonly configService: ConfigService) {
     super({
       secretOrKey: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
@@ -14,7 +14,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload) {
-    const { sub } = payload;
-    return sub;
+    return { ...payload };
   }
 }

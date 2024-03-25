@@ -1,16 +1,7 @@
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Request,
-  Req,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Response } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './strategy/google-oauth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateUserDto } from './dto/googleuser.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -24,13 +15,21 @@ export class AuthController {
   @ApiOperation({ summary: '구글 로그인 요청' })
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
-  async googleAuthRedirect(@Request() req) {
-    return await this.authService.googleLogin(req);
+  async googleAuthRedirect(@Request() req, @Response() res) {
+    const { user, url } = await this.authService.findOrSaveUser(req);
+    const { accessToken, refreshToken } = this.authService.getToken(user);
+    res.cookie('access-token', accessToken, { httpOnly: true });
+    res.cookie('refresh-token', refreshToken, { httpOnly: true });
+
+    res.redirect(url);
   }
 
-  @ApiOperation({ summary: '회원가입' })
-  @Post('signup')
-  async signup(@Body() createUserDto: CreateUserDto) {
-    return await this.authService.signUp(createUserDto);
-  }
+  // @UseGuards(AuthGuard('refresh'))
+  // @Post('/refresh')
+  // @ApiOperation({ description: '토큰 재발급' })
+  // restoreAccessToken(@Request() req) {
+  //   const accessToken = await this.authService.getAccessToken({
+  //     user: req.user,
+  //   });
+  // }
 }
