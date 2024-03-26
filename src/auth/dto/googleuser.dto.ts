@@ -30,8 +30,4 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   picture: string;
-
-  @ApiProperty()
-  @IsNumber()
-  team: number;
 }

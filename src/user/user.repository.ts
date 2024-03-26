@@ -4,6 +4,7 @@ import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
 import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
 import { UpdateTeamInfoDto } from 'src/auth/dto/update-team-info.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @CustomRepository(User)
 export class UserRepository extends Repository<User> {
@@ -53,5 +54,12 @@ export class UserRepository extends Repository<User> {
     updateTeamInfoDto: UpdateTeamInfoDto,
   ): Promise<void> {
     await this.update(userId, updateTeamInfoDto);
+  }
+
+  async updateUser(
+    userId: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<void> {
+    await this.update(userId, updateUserDto);
   }
 }

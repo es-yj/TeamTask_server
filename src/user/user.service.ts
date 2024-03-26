@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { Project } from 'src/project/entities/project.entity';
 import { User } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -37,6 +38,22 @@ export class UserService {
     } catch (error) {
       throw new InternalServerErrorException(
         '유저 반환에 실패했습니다.' + error[0],
+      );
+    }
+  }
+
+  async updateUser(userId: number, updateUserDto: UpdateUserDto) {
+    try {
+      const user = await this.userRepository.findUserById(userId);
+      if (!user) {
+        throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
+      }
+
+      await this.userRepository.updateUser(userId, updateUserDto);
+      return { msg: '사용자 정보 수정에 성공했습니다.' };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        '사용자 정보 수정에 실패하였습니다.',
       );
     }
   }
