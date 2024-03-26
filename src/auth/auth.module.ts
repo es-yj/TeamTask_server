@@ -12,7 +12,7 @@ import { RefreshStrategy } from './strategy/refresh.strategy';
   imports: [
     UserModule,
     JwtModule.register({}),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'access' }),
   ],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy, RefreshStrategy],

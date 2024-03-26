@@ -20,22 +20,23 @@ import { GetUser } from 'src/common/get-user.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({ summary: '구글 로그인 요청' })
   @Get()
   @UseGuards(GoogleOAuthGuard)
   async googleAuth(@Request() req) {}
 
-  @ApiOperation({ summary: '구글 로그인 요청' })
   @Get('google-redirect')
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Request() req, @Response() res) {
     const { user, url } = await this.authService.findOrSaveUser(req);
     const { accessToken, refreshToken } = this.authService.getToken(user);
-    res.cookie('access-token', accessToken, { httpOnly: true });
+    // res.cookie('access-token', accessToken, { httpOnly: true });
     res.cookie('refresh-token', refreshToken, { httpOnly: true });
 
-    res.redirect(url);
+    res.redirect(url + accessToken);
   }
 
+  @ApiOperation({ summary: '팀 정보 입력' })
   @UseGuards(AuthGuard('access'))
   @Patch('team')
   async updateTeamInfo(

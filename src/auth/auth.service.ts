@@ -19,8 +19,8 @@ export class AuthService {
       const { email } = googleReq.user;
       let user = await this.userRepository.findUserByEmail(email);
       const url = user
-        ? 'http://localhost:3000'
-        : 'http://localhost:3000/account/team';
+        ? 'http://localhost:3000/'
+        : 'http://localhost:3000/account/team/';
 
       if (!user) {
         user = await this.userRepository.save(googleReq.user);
