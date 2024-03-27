@@ -36,8 +36,9 @@ export class UserService {
 
       return user;
     } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
-        '유저 반환에 실패했습니다.' + error[0],
+        '유저 반환에 실패했습니다.' + error.message,
       );
     }
   }

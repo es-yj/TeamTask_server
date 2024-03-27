@@ -8,8 +8,6 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectRepository } from './project.repository';
-import { UserRepository } from 'src/user/user.repository';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class ProjectService {
@@ -22,14 +20,15 @@ export class ProjectService {
   async createProject(createProjectDto: CreateProjectDto) {
     try {
       const { managerId } = createProjectDto;
-      const manager = this.userService.findUserById(managerId);
+      const manager = await this.userService.findUserById(managerId);
 
       await this.projectRepository.createProject(createProjectDto);
 
       return { msg: '프로젝트 생성에 성공하였습니다.' };
     } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(
-        '프로젝트 생성에 실패했습니다. | ' + error,
+        '프로젝트 생성에 실패했습니다. | ' + error.message,
       );
     }
   }
