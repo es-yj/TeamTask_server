@@ -81,14 +81,14 @@ export class UserService {
 
   async getUsersByTeam(teamId?: number) {
     try {
-      if (teamId) {
-        const team = await this.teamRepository.findOne({
-          where: { team: teamId },
-        });
-        if (!team) {
-          throw new NotFoundException('해당 id의 팀을 찾을 수 없습니다.');
-        }
-      }
+      // if (teamId) {
+      //   const team = await this.teamRepository.findOne({
+      //     where: { team: teamId },
+      //   });
+      //   if (!team) {
+      //     throw new NotFoundException('해당 id의 팀을 찾을 수 없습니다.');
+      //   }
+      // }
       return await this.userRepository.findUsersByTeam(teamId);
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -96,6 +96,10 @@ export class UserService {
         '유저 목록 반환에 실패하였습니다.',
       );
     }
+  }
+
+  async removeRefreshToken(userId: number): Promise<any> {
+    return await this.userRepository.update(userId, { refreshToken: null });
   }
 
   // async refreshTokenMatches(refreshToken: string, id: number): Promise<User> {

@@ -7,6 +7,7 @@ import {
   Post,
   Patch,
   Body,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './strategy/google-oauth.guard';
@@ -14,11 +15,14 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/common/get-user.decorator';
-
+import { UserService } from 'src/user/user.service';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @ApiOperation({ summary: '구글 로그인 요청' })
   @Get()
@@ -46,6 +50,15 @@ export class AuthController {
     return this.authService.updateTeamInfo(userId, updateTeamInfoDto);
   }
 
+  @Post('logout')
+  async logout(@Request() req: any, @Res() res: Response): Promise<any> {
+    await this.userService.removeRefreshToken(req.user.sub);
+    // res.clearCookie('access_token');
+    // res.clearCookie('refresh_token');
+    return {
+      message: 'logout success',
+    };
+  }
   // @UseGuards(AuthGuard('refresh'))
   // @Post('/refresh')
   // @ApiOperation({ description: '토큰 재발급' })

@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Entity,
@@ -30,6 +31,10 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true, default: 'pending' })
   status: string;
+
+  @Column({ nullable: true })
+  @Exclude()
+  refreshToken?: string;
 
   @CreateDateColumn()
   createdAt: Date;
