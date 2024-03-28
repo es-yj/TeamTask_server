@@ -3,16 +3,18 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { Project } from 'src/project/entities/project.entity';
-import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Team } from './entities/team.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserRepository) private userRepository: UserRepository,
+    @InjectRepository(Team) private teamRepository: Repository<Team>,
   ) {}
 
   async findAllUsers() {
@@ -61,14 +63,39 @@ export class UserService {
 
   // 사용자가 담당하는 프로젝트 조회
   async findProjectsByUserId(userId: number): Promise<Project[]> {
-    const userWithProjects =
-      await this.userRepository.findProjectsByUserId(userId);
+    try {
+      const userWithProjects =
+        await this.userRepository.findProjectsByUserId(userId);
 
-    if (!userWithProjects) {
-      return [];
+      if (!userWithProjects) {
+        return [];
+      }
+
+      return userWithProjects;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        '사용자의 프로젝트 목록 조회에 실패하였습니다.',
+      );
     }
+  }
 
-    return userWithProjects;
+  async getUsersByTeam(teamId?: number) {
+    try {
+      if (teamId) {
+        const team = await this.teamRepository.findOne({
+          where: { team: teamId },
+        });
+        if (!team) {
+          throw new NotFoundException('해당 id의 팀을 찾을 수 없습니다.');
+        }
+      }
+      return await this.userRepository.findUsersByTeam(teamId);
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(
+        '유저 목록 반환에 실패하였습니다.',
+      );
+    }
   }
 
   // async refreshTokenMatches(refreshToken: string, id: number): Promise<User> {
