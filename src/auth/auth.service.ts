@@ -1,10 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateUserDto, GoogleRequest } from './dto/googleuser.dto';
+import { GoogleRequest } from './dto/googleuser.dto';
 import { UserRepository } from 'src/user/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/entities/user.entity';
 import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +13,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {}
 
   async findOrSaveUser(googleReq: GoogleRequest) {
@@ -45,23 +47,27 @@ export class AuthService {
     }
   }
 
-  getToken(user: User) {
+  async generateAccessToken(user: User): Promise<string> {
     const payload = {
       email: user.email,
       sub: user.id,
       status: user.status,
     };
-
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME'),
     });
+    return accessToken;
+  }
 
+  async generateRefreshToken(user: User): Promise<string> {
+    const payload = {
+      sub: user.id,
+    };
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
     });
-
-    return { accessToken, refreshToken };
+    return refreshToken;
   }
 }

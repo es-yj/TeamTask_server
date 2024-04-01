@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Entity,
@@ -30,6 +31,12 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true, default: 'pending' })
   status: string;
+
+  @Column({ nullable: true })
+  currentRefreshToken?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  currentRefreshTokenExp: Date;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
@@ -12,18 +13,22 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     private readonly userService: UserService,
   ) {
     super({
-      jwtFromRequest: (req) => {
-        const cookie = req.cookies['refresh-token'];
-        return cookie;
-      },
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+          return request?.cookies?.refreshToken;
+        },
+      ]),
       secretOrKey: configService.get('JWT_REFRESH_TOKEN_SECRET'),
       passReqToCallback: true,
     });
   }
 
-  validate(payload: any) {
-    return {
-      ...payload,
-    };
+  async validate(req: Request, payload: any) {
+    const refreshToken = req.cookies['refreshToken'];
+    const user: User = await this.userService.getUserIfRefreshTokenMatches(
+      refreshToken,
+      payload.sub,
+    );
+    return user;
   }
 }

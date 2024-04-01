@@ -62,4 +62,12 @@ export class UserRepository extends Repository<User> {
   ): Promise<void> {
     await this.update(userId, updateUserDto);
   }
+
+  async findUsersByTeam(teamId: number): Promise<User[]> {
+    if (teamId) {
+      return this.find({ where: { team: teamId } });
+    }
+
+    return this.find();
+  }
 }
