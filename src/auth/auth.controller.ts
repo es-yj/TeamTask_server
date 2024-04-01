@@ -58,9 +58,8 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard('refresh'))
   async logout(@Req() req, @Res() res): Promise<any> {
-    console.log(req.user);
-    await this.userService.removeRefreshToken(req.user.sub);
-    res.clearCookie('access_token');
+    await this.userService.removeRefreshToken(req.user.id);
+    res.clearCookie('refreshToken');
 
     return {
       message: 'logout success',
