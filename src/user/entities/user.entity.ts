@@ -33,8 +33,10 @@ export class User extends BaseEntity {
   status: string;
 
   @Column({ nullable: true })
-  @Exclude()
-  refreshToken?: string;
+  currentRefreshToken?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  currentRefreshTokenExp: Date;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -8,6 +8,7 @@ import {
   Patch,
   Body,
   Res,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './strategy/google-oauth.guard';
@@ -16,6 +17,7 @@ import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/common/get-user.decorator';
 import { UserService } from 'src/user/user.service';
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -33,9 +35,12 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   async googleAuthRedirect(@Request() req, @Response() res) {
     const { user, url } = await this.authService.findOrSaveUser(req);
-    const { accessToken, refreshToken } = this.authService.getToken(user);
-    // res.cookie('access-token', accessToken, { httpOnly: true });
-    res.cookie('refresh-token', refreshToken, { httpOnly: true });
+    const accessToken = await this.authService.generateAccessToken(user);
+    const refreshToken = await this.authService.generateRefreshToken(user);
+
+    await this.userService.setCurrentRefreshToken(refreshToken, user.id);
+
+    res.cookie('refreshToken', refreshToken, { httpOnly: true });
 
     res.redirect(url + accessToken);
   }
@@ -51,20 +56,22 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Request() req: any, @Res() res: Response): Promise<any> {
+  @UseGuards(AuthGuard('refresh'))
+  async logout(@Req() req, @Res() res): Promise<any> {
+    console.log(req.user);
     await this.userService.removeRefreshToken(req.user.sub);
-    // res.clearCookie('access_token');
-    // res.clearCookie('refresh_token');
+    res.clearCookie('access_token');
+
     return {
       message: 'logout success',
     };
   }
-  // @UseGuards(AuthGuard('refresh'))
-  // @Post('/refresh')
-  // @ApiOperation({ description: '토큰 재발급' })
-  // restoreAccessToken(@Request() req) {
-  //   const accessToken = await this.authService.getAccessToken({
-  //     user: req.user,
-  //   });
-  // }
+
+  @UseGuards(AuthGuard('refresh'))
+  @Post('refresh')
+  @ApiOperation({ description: '액세스 토큰 재발급' })
+  async restoreAccessToken(@Request() req) {
+    const accessToken = await this.authService.generateAccessToken(req.user);
+    return { accessToken };
+  }
 }
