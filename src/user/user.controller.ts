@@ -12,7 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/get-user.decorator';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -46,11 +46,12 @@ export class UserController {
   }
 
   @ApiOperation({ summary: '유저 정보 수정' })
-  @Patch()
+  @ApiParam({ name: 'id', required: true, description: 'user id' })
+  @Patch(':id')
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
-    @GetUser() userId: number,
+    @Param('id') id: number,
   ) {
-    return await this.userService.updateUser(userId, updateUserDto);
+    return await this.userService.updateUser(id, updateUserDto);
   }
 }
