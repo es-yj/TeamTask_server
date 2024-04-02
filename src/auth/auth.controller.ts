@@ -61,9 +61,7 @@ export class AuthController {
     await this.userService.removeRefreshToken(req.user.id);
     res.clearCookie('refreshToken');
 
-    return {
-      message: 'logout success',
-    };
+    return res.send({ message: '로그아웃 되었습니다.' });
   }
 
   @UseGuards(AuthGuard('refresh'))
