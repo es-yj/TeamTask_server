@@ -16,6 +16,7 @@ import { RoleTransformPipe } from './pipes/role-transform.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from './enum/roles.enum';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { StatusTransformPipe } from './pipes/status-transform.pipe';
 
 @ApiTags('User')
 @UseGuards(AuthGuard('access'))
@@ -59,8 +60,13 @@ export class UserController {
 
   @ApiOperation({ summary: '유저 승인' })
   @ApiParam({ name: 'id', required: true, description: 'user id' })
-  @Patch('approvals/:id')
-  async approveUser() {
-    //approved
+  @Roles(Role.TM, Role.VM, Role.Admin)
+  @UseGuards(RolesGuard)
+  @Patch(':id/status')
+  async approveUser(
+    @Param('id') id: number,
+    @Body(new StatusTransformPipe()) updateUserDto: UpdateUserDto,
+  ) {
+    return await this.userService.updateUser(id, updateUserDto);
   }
 }

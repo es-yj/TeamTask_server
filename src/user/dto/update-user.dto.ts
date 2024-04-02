@@ -16,4 +16,9 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   role?: Role;
+
+  @ApiProperty({ description: '승인 여부', required: false })
+  @IsString()
+  @IsOptional()
+  status?: string;
 }
