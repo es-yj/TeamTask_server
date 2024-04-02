@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { CustomRepository } from 'src/common/typeorm-repository.decorator';
+import { CustomRepository } from 'src/common/decorators/typeorm-repository.decorator';
 import { Project } from './entities/project.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';

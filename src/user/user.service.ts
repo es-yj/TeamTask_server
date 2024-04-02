@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -7,7 +9,7 @@ import { Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { Project } from 'src/project/entities/project.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
 import { Team } from './entities/team.entity';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -20,17 +22,6 @@ export class UserService {
     @InjectRepository(Team) private teamRepository: Repository<Team>,
     private readonly configService: ConfigService,
   ) {}
-
-  async findAllUsers() {
-    try {
-      const users = await this.userRepository.findAllUsers();
-      return users;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '유저 목록 반환에 실패했습니다.' + error[0],
-      );
-    }
-  }
 
   async findUserById(id: number) {
     try {
@@ -61,6 +52,32 @@ export class UserService {
     } catch (error) {
       throw new InternalServerErrorException(
         '사용자 정보 수정에 실패하였습니다.',
+      );
+    }
+  }
+
+  async updateUserStatus(
+    userId: number,
+    updateUserStatusDto: UpdateUserStatusDto,
+  ) {
+    try {
+      const user = await this.userRepository.findUserById(userId);
+      if (!user) {
+        throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
+      }
+
+      if (user.status != 'pending') {
+        throw new ConflictException('이미 승인 또는 거절된 사용자입니다.');
+      }
+
+      await this.userRepository.updateUser(userId, updateUserStatusDto);
+      return { msg: '사용자 승인/거절에 성공했습니다.' };
+    } catch (error) {
+      if (error instanceof NotFoundException || ConflictException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        '사용자 승인/거절에 실패하였습니다.',
       );
     }
   }
@@ -135,7 +152,8 @@ export class UserService {
     refreshToken: string,
     userId: number,
   ): Promise<User> {
-    const user: User = await this.findUserById(userId);
+    const user: User = await this.userRepository.findUserByIdWithToken(userId);
+
     // user에 currentRefreshToken이 없다면 null을 반환 (즉, 토큰 값이 null일 경우)
     if (!user.currentRefreshToken) {
       return null;
@@ -158,5 +176,9 @@ export class UserService {
       currentRefreshToken: null,
       currentRefreshTokenExp: null,
     });
+  }
+
+  async removePendingUsers(threshold: Date) {
+    await this.userRepository.removePendingUsers(threshold);
   }
 }

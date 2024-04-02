@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { CustomRepository } from 'src/common/typeorm-repository.decorator';
+import { CustomRepository } from 'src/common/decorators/typeorm-repository.decorator';
 import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
 import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
@@ -30,13 +30,28 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
-  async findAllUsers(): Promise<User[] | null> {
-    const users = await this.find();
-    return users;
+  async findUserById(id: number): Promise<User | null> {
+    const user = await this.findOne({
+      select: [
+        'id',
+        'name',
+        'email',
+        'picture',
+        'team',
+        'role',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      where: { id },
+    });
+    return user;
   }
 
-  async findUserById(id: number): Promise<User | null> {
-    const user = await this.findOne({ where: { id } });
+  async findUserByIdWithToken(id: number): Promise<User | null> {
+    const user = await this.findOne({
+      where: { id },
+    });
     return user;
   }
 
@@ -56,18 +71,48 @@ export class UserRepository extends Repository<User> {
     await this.update(userId, updateTeamInfoDto);
   }
 
-  async updateUser(
-    userId: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<void> {
+  async updateUser(userId: number, updateUserDto: object): Promise<void> {
     await this.update(userId, updateUserDto);
   }
 
   async findUsersByTeam(teamId: number): Promise<User[]> {
     if (teamId) {
-      return this.find({ where: { team: teamId } });
+      return this.find({
+        select: [
+          'id',
+          'name',
+          'email',
+          'picture',
+          'team',
+          'role',
+          'status',
+          'createdAt',
+          'updatedAt',
+        ],
+        where: { team: teamId },
+      });
     }
 
-    return this.find();
+    return this.find({
+      select: [
+        'id',
+        'name',
+        'email',
+        'picture',
+        'team',
+        'role',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
+  }
+
+  async removePendingUsers(threshold: Date) {
+    this.createQueryBuilder()
+      .delete()
+      .from(User)
+      .where('created_at<:threshold', { threshold })
+      .execute();
   }
 }
