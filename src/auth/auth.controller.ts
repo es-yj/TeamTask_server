@@ -15,7 +15,7 @@ import { GoogleOAuthGuard } from './strategy/google-oauth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from 'src/common/get-user.decorator';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { UserService } from 'src/user/user.service';
 
 @ApiTags('auth')

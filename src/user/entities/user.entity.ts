@@ -1,4 +1,3 @@
-import { Exclude } from 'class-transformer';
 import { Project } from 'src/project/entities/project.entity';
 import {
   Entity,
@@ -9,6 +8,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Role } from '../enum/roles.enum';
+
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -24,7 +25,7 @@ export class User extends BaseEntity {
   picture?: string;
 
   @Column({ nullable: true })
-  position?: string;
+  role?: Role;
 
   @Column({ nullable: true })
   team?: number;

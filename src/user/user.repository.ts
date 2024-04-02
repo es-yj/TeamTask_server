@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { CustomRepository } from 'src/common/typeorm-repository.decorator';
+import { CustomRepository } from 'src/common/decorators/typeorm-repository.decorator';
 import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
 import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
