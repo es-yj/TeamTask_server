@@ -11,7 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
 import { RoleTransformPipe } from './pipes/role-transform.pipe';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from './enum/roles.enum';
@@ -46,7 +46,10 @@ export class UserController {
     return this.userService.findProjectsByUserId(userId);
   }
 
-  @ApiOperation({ summary: '유저 정보 수정. 팀장/실장만 가능' })
+  @ApiOperation({
+    summary: '유저 정보 수정',
+    description: '권한: 팀장/실장/관리자 | 상태값: [PA,PM,팀장,실장,관리자]',
+  })
   @ApiParam({ name: 'id', required: true, description: 'user id' })
   @Roles(Role.TM, Role.VM, Role.Admin)
   @UseGuards(RolesGuard)
@@ -58,15 +61,18 @@ export class UserController {
     return await this.userService.updateUser(id, updateUserDto);
   }
 
-  @ApiOperation({ summary: '유저 승인' })
+  @ApiOperation({
+    summary: '유저 승인',
+    description: '권한: 팀장/실장/관리자 | 상태값: [승인, 거절]',
+  })
   @ApiParam({ name: 'id', required: true, description: 'user id' })
   @Roles(Role.TM, Role.VM, Role.Admin)
   @UseGuards(RolesGuard)
   @Patch(':id/status')
-  async approveUser(
+  async updateUserStatus(
     @Param('id') id: number,
-    @Body(new StatusTransformPipe()) updateUserDto: UpdateUserDto,
+    @Body(new StatusTransformPipe()) updateUserStatusDto: UpdateUserStatusDto,
   ) {
-    return await this.userService.updateUser(id, updateUserDto);
+    return await this.userService.updateUserStatus(id, updateUserStatusDto);
   }
 }

@@ -71,10 +71,7 @@ export class UserRepository extends Repository<User> {
     await this.update(userId, updateTeamInfoDto);
   }
 
-  async updateUser(
-    userId: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<void> {
+  async updateUser(userId: number, updateUserDto: object): Promise<void> {
     await this.update(userId, updateUserDto);
   }
 

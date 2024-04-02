@@ -16,8 +16,14 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   role?: Role;
+}
 
-  @ApiProperty({ description: '승인 여부', required: false })
+export class UpdateUserStatusDto {
+  @ApiProperty({
+    description: '승인 여부',
+    required: false,
+    enum: ['승인', '거절'],
+  })
   @IsString()
   @IsOptional()
   status?: string;
