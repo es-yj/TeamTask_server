@@ -70,4 +70,12 @@ export class UserRepository extends Repository<User> {
 
     return this.find();
   }
+
+  async removePendingUsers(threshold: Date) {
+    this.createQueryBuilder()
+      .delete()
+      .from(User)
+      .where('created_at<:threshold', { threshold })
+      .execute();
+  }
 }

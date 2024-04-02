@@ -159,4 +159,8 @@ export class UserService {
       currentRefreshTokenExp: null,
     });
   }
+
+  async removePendingUsers(threshold: Date) {
+    await this.userRepository.removePendingUsers(threshold);
+  }
 }
