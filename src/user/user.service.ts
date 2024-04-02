@@ -21,17 +21,6 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
-  async findAllUsers() {
-    try {
-      const users = await this.userRepository.findAllUsers();
-      return users;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '유저 목록 반환에 실패했습니다.' + error[0],
-      );
-    }
-  }
-
   async findUserById(id: number) {
     try {
       const user = await this.userRepository.findUserById(id);
@@ -135,7 +124,8 @@ export class UserService {
     refreshToken: string,
     userId: number,
   ): Promise<User> {
-    const user: User = await this.findUserById(userId);
+    const user: User = await this.userRepository.findUserByIdWithToken(userId);
+
     // user에 currentRefreshToken이 없다면 null을 반환 (즉, 토큰 값이 null일 경우)
     if (!user.currentRefreshToken) {
       return null;

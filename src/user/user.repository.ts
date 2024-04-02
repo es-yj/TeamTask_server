@@ -30,13 +30,28 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
-  async findAllUsers(): Promise<User[] | null> {
-    const users = await this.find();
-    return users;
+  async findUserById(id: number): Promise<User | null> {
+    const user = await this.findOne({
+      select: [
+        'id',
+        'name',
+        'email',
+        'picture',
+        'team',
+        'role',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      where: { id },
+    });
+    return user;
   }
 
-  async findUserById(id: number): Promise<User | null> {
-    const user = await this.findOne({ where: { id } });
+  async findUserByIdWithToken(id: number): Promise<User | null> {
+    const user = await this.findOne({
+      where: { id },
+    });
     return user;
   }
 
@@ -65,10 +80,35 @@ export class UserRepository extends Repository<User> {
 
   async findUsersByTeam(teamId: number): Promise<User[]> {
     if (teamId) {
-      return this.find({ where: { team: teamId } });
+      return this.find({
+        select: [
+          'id',
+          'name',
+          'email',
+          'picture',
+          'team',
+          'role',
+          'status',
+          'createdAt',
+          'updatedAt',
+        ],
+        where: { team: teamId },
+      });
     }
 
-    return this.find();
+    return this.find({
+      select: [
+        'id',
+        'name',
+        'email',
+        'picture',
+        'team',
+        'role',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
   }
 
   async removePendingUsers(threshold: Date) {
