@@ -12,10 +12,16 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @ApiTags('Project')
+@ApiBearerAuth('accessToken')
 @UseGuards(AuthGuard('access'))
 @Controller('project')
 export class ProjectController {

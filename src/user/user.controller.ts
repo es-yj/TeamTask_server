@@ -8,7 +8,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { UserService } from './user.service';
 import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
@@ -19,6 +25,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { StatusTransformPipe } from './pipes/status-transform.pipe';
 
 @ApiTags('User')
+@ApiBearerAuth('accessToken')
 @UseGuards(AuthGuard('access'))
 @Controller('user')
 export class UserController {

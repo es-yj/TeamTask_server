@@ -112,7 +112,8 @@ export class UserRepository extends Repository<User> {
     this.createQueryBuilder()
       .delete()
       .from(User)
-      .where('created_at<:threshold', { threshold })
+      .where('status = :status', { status: 'pending' })
+      .andWhere('created_at<:threshold', { threshold })
       .execute();
   }
 }
