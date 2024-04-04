@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './strategy/google-oauth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -46,6 +46,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: '팀 정보 입력' })
+  @ApiBearerAuth('accessToken')
   @UseGuards(AuthGuard('access'))
   @Patch('team')
   async updateTeamInfo(
