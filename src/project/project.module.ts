@@ -13,7 +13,7 @@ import { SlackService } from 'src/common/slack.service';
   imports: [
     TypeOrmModule.forFeature([Project]),
     TypeOrmExModule.forCustomRepository([ProjectRepository]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'access' }),
     UserModule,
   ],
   controllers: [ProjectController],
