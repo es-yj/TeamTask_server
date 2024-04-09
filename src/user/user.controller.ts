@@ -55,6 +55,20 @@ export class UserController {
   }
 
   @ApiOperation({
+    summary: '승인 대기 유저 조회',
+    description: '권한: 팀장/실장',
+  })
+  @Roles(Role.TM, Role.VM, Role.Admin)
+  @UseGuards(RolesGuard)
+  @Get('pending')
+  async getPendingUsers(
+    @GetUser()
+    userId: number,
+  ) {
+    return this.userService.findPendingUsers(userId);
+  }
+
+  @ApiOperation({
     summary: '유저 정보 수정',
     description: '권한: 팀장/실장/관리자 | 상태값: [PA,PM,팀장,실장,관리자]',
   })

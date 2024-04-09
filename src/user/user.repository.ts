@@ -61,7 +61,10 @@ export class UserRepository extends Repository<User> {
       relations: ['projects'],
     });
 
-    return userWithProjects.projects;
+    if (userWithProjects) {
+      return userWithProjects.projects;
+    }
+    return null;
   }
 
   async updateUserTeamInfo(
@@ -115,5 +118,38 @@ export class UserRepository extends Repository<User> {
       .where('status = :status', { status: 'pending' })
       .andWhere('created_at<:threshold', { threshold })
       .execute();
+  }
+
+  async findPendingUsers(teamId?: number): Promise<User[]> {
+    if (teamId) {
+      return await this.find({
+        where: { team: teamId, status: 'pending' },
+        select: [
+          'id',
+          'name',
+          'email',
+          'picture',
+          'team',
+          'status',
+          'createdAt',
+          'updatedAt',
+        ],
+      });
+    } else {
+      return await this.find({
+        where: { status: 'pending' },
+        select: [
+          'id',
+          'name',
+          'email',
+          'picture',
+          'team',
+          'role',
+          'status',
+          'createdAt',
+          'updatedAt',
+        ],
+      });
+    }
   }
 }

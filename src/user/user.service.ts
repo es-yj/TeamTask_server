@@ -13,6 +13,7 @@ import { Team } from './entities/team.entity';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
+import { Role } from './enum/roles.enum';
 
 @Injectable()
 export class UserService {
@@ -144,5 +145,29 @@ export class UserService {
 
   async removePendingUsers(threshold: Date) {
     await this.userRepository.removePendingUsers(threshold);
+  }
+
+  async getTeamManagers(teamId: number) {
+    const result = await this.teamRepository
+      .createQueryBuilder('team')
+      .select('user.id', 'tmId') // "user.id"를 "tmId"라는 별칭으로 선택
+      .addSelect('user.name', 'tmName')
+      .innerJoin('team.tm', 'user') // "team" 엔터티의 "tm" 필드에 해당하는 "user" 테이블과 조인
+      .where('team.team = :teamId', { teamId }) // 바인딩된 변수를 사용하여 SQL 인젝션 방지
+      .getRawOne(); // Raw 결과 가져오기
+
+    return result ? result : null; // 결과가 있으면 tmId 반환, 없으면 null 반환
+  }
+
+  async findPendingUsers(userId: number): Promise<User[]> {
+    const user = await this.findUserById(userId);
+    if (!userId) {
+      throw new NotFoundException('해당 id를 가진 사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.role === Role.TM) {
+      return await this.userRepository.findPendingUsers(user.team);
+    }
+    return await this.userRepository.findPendingUsers();
   }
 }

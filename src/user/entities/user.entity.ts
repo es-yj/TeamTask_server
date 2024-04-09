@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../enum/roles.enum';
+import { Team } from './team.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -47,4 +48,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Project, (project) => project.manager)
   projects: Project[];
+
+  @OneToMany(() => Team, (team) => team.tm)
+  teams: Team[];
 }
