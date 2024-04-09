@@ -9,7 +9,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectRepository } from './project.repository';
-import { SlackService } from 'src/common/slack.service';
+import { SlackService } from 'src/slack/slack.service';
 
 @Injectable()
 export class ProjectService {

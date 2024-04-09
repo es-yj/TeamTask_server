@@ -94,9 +94,14 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Patch(':id/status')
   async updateUserStatus(
+    @GetUser() userId: number,
     @Param('id') id: number,
     @Body(new StatusTransformPipe()) updateUserStatusDto: UpdateUserStatusDto,
   ) {
-    return await this.userService.updateUserStatus(id, updateUserStatusDto);
+    return await this.userService.updateUserStatus(
+      id,
+      updateUserStatusDto,
+      userId,
+    );
   }
 }

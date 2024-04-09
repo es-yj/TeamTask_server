@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -44,19 +45,28 @@ export class UserService {
   }
 
   async updateUserStatus(
-    userId: number,
+    updateUserId: number,
     updateUserStatusDto: UpdateUserStatusDto,
+    managerId: number,
   ) {
-    const user = await this.userRepository.findUserById(userId);
-    if (!user) {
+    const updateUser = await this.userRepository.findUserById(updateUserId);
+    if (!updateUser) {
       throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
     }
 
-    if (user.status != 'pending') {
+    const manager = await this.userRepository.findUserById(managerId);
+
+    if (updateUser.status != 'pending') {
       throw new ConflictException('이미 승인 또는 거절된 사용자입니다.');
     }
 
-    await this.userRepository.updateUser(userId, updateUserStatusDto);
+    if (manager.role == Role.TM && updateUser.team !== manager.team) {
+      throw new UnauthorizedException(
+        'TM은 속한 팀의 사용자만 승인할 수 있습니다.',
+      );
+    }
+
+    await this.userRepository.updateUser(updateUserId, updateUserStatusDto);
     return { msg: '사용자 승인/거절에 성공했습니다.' };
   }
 
