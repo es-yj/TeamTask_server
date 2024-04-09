@@ -37,14 +37,10 @@ export class AuthService {
   }
 
   async updateTeamInfo(userId, updateTeamInfoDto: UpdateTeamInfoDto) {
-    try {
-      return await this.userRepository.updateUserTeamInfo(
-        userId,
-        updateTeamInfoDto,
-      );
-    } catch (error) {
-      throw new InternalServerErrorException('팀 정보 입력에 실패했습니다.');
-    }
+    return await this.userRepository.updateUserTeamInfo(
+      userId,
+      updateTeamInfoDto,
+    );
   }
 
   async generateAccessToken(user: User): Promise<string> {

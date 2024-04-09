@@ -1,11 +1,11 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { Project } from 'src/project/entities/project.entity';
@@ -14,6 +14,7 @@ import { Team } from './entities/team.entity';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
+import { Role } from './enum/roles.enum';
 
 @Injectable()
 export class UserService {
@@ -24,99 +25,80 @@ export class UserService {
   ) {}
 
   async findUserById(id: number) {
-    try {
-      const user = await this.userRepository.findUserById(id);
-
-      if (!user) {
-        throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
-      }
-
-      return user;
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(
-        '유저 반환에 실패했습니다.' + error.message,
-      );
+    const user = await this.userRepository.findUserById(id);
+    if (!user) {
+      throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
     }
+    return user;
   }
 
   async updateUser(userId: number, updateUserDto: UpdateUserDto) {
-    try {
-      const user = await this.userRepository.findUserById(userId);
-      if (!user) {
-        throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
-      }
-
-      await this.userRepository.updateUser(userId, updateUserDto);
-      return { msg: '사용자 정보 수정에 성공했습니다.' };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '사용자 정보 수정에 실패하였습니다.',
-      );
+    const user = await this.userRepository.findUserById(userId);
+    if (!user) {
+      throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
     }
+
+    await this.userRepository.updateUser(userId, updateUserDto);
+    return { msg: '사용자 정보 수정에 성공했습니다.' };
   }
 
   async updateUserStatus(
-    userId: number,
+    updateUserId: number,
     updateUserStatusDto: UpdateUserStatusDto,
+    managerId: number,
   ) {
-    try {
-      const user = await this.userRepository.findUserById(userId);
-      if (!user) {
-        throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
-      }
+    const updateUser = await this.userRepository.findUserById(updateUserId);
+    const manager = await this.userRepository.findUserById(managerId);
 
-      if (user.status != 'pending') {
-        throw new ConflictException('이미 승인 또는 거절된 사용자입니다.');
-      }
+    this.validateUserStatus(updateUser);
+    this.validateManagerRole(manager, updateUser);
 
-      await this.userRepository.updateUser(userId, updateUserStatusDto);
-      return { msg: '사용자 승인/거절에 성공했습니다.' };
-    } catch (error) {
-      if (error instanceof NotFoundException || ConflictException) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        '사용자 승인/거절에 실패하였습니다.',
-      );
-    }
+    await this.userRepository.updateUser(updateUserId, updateUserStatusDto);
+    return { msg: '사용자 승인/거절에 성공했습니다.' };
   }
 
   // 사용자가 담당하는 프로젝트 조회
   async findProjectsByUserId(userId: number): Promise<Project[]> {
-    try {
-      const userWithProjects =
-        await this.userRepository.findProjectsByUserId(userId);
+    const userWithProjects =
+      await this.userRepository.findProjectsByUserId(userId);
 
-      if (!userWithProjects) {
-        return [];
-      }
-
-      return userWithProjects;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '사용자의 프로젝트 목록 조회에 실패하였습니다.',
-      );
+    if (!userWithProjects) {
+      return [];
     }
+
+    return userWithProjects;
   }
 
   async getUsersByTeam(teamId?: number) {
-    try {
-      // if (teamId) {
-      //   const team = await this.teamRepository.findOne({
-      //     where: { team: teamId },
-      //   });
-      //   if (!team) {
-      //     throw new NotFoundException('해당 id의 팀을 찾을 수 없습니다.');
-      //   }
-      // }
-      return await this.userRepository.findUsersByTeam(teamId);
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(
-        '유저 목록 반환에 실패하였습니다.',
-      );
+    return await this.userRepository.findUsersByTeam(teamId);
+  }
+
+  async removePendingUsers(threshold: Date) {
+    await this.userRepository.removePendingUsers(threshold);
+  }
+
+  async getTeamManagers(teamId: number) {
+    const result = await this.teamRepository
+      .createQueryBuilder('team')
+      .select('user.id', 'tmId') // "user.id"를 "tmId"라는 별칭으로 선택
+      .addSelect('user.name', 'tmName')
+      .innerJoin('team.tm', 'user') // "team" 엔터티의 "tm" 필드에 해당하는 "user" 테이블과 조인
+      .where('team.team = :teamId', { teamId }) // 바인딩된 변수를 사용하여 SQL 인젝션 방지
+      .getRawOne(); // Raw 결과 가져오기
+
+    return result ? result : null; // 결과가 있으면 tmId 반환, 없으면 null 반환
+  }
+
+  async findPendingUsers(userId: number): Promise<User[]> {
+    const user = await this.findUserById(userId);
+    if (!userId) {
+      throw new NotFoundException('해당 id를 가진 사용자를 찾을 수 없습니다.');
     }
+
+    if (user.role === Role.TM) {
+      return await this.userRepository.findPendingUsers(user.team);
+    }
+    return await this.userRepository.findPendingUsers();
   }
 
   // 해시화된 refresh token 저장
@@ -178,7 +160,17 @@ export class UserService {
     });
   }
 
-  async removePendingUsers(threshold: Date) {
-    await this.userRepository.removePendingUsers(threshold);
+  private validateUserStatus(user: User) {
+    if (user.status != 'pending') {
+      throw new ConflictException('이미 승인 또는 거절된 사용자입니다.');
+    }
+  }
+
+  private validateManagerRole(manager: User, user: User) {
+    if (manager.role == Role.TM && user.team !== manager.team) {
+      throw new UnauthorizedException(
+        'TM은 속한 팀의 사용자만 승인할 수 있습니다.',
+      );
+    }
   }
 }

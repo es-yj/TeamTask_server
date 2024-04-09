@@ -10,6 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -54,9 +55,24 @@ export class UserController {
   }
 
   @ApiOperation({
+    summary: '승인 대기 유저 조회',
+    description: '권한: 팀장/실장',
+  })
+  @Roles(Role.TM, Role.VM, Role.Admin)
+  @UseGuards(RolesGuard)
+  @Get('pending')
+  async getPendingUsers(
+    @GetUser()
+    userId: number,
+  ) {
+    return this.userService.findPendingUsers(userId);
+  }
+
+  @ApiOperation({
     summary: '유저 정보 수정',
     description: '권한: 팀장/실장/관리자 | 상태값: [PA,PM,팀장,실장,관리자]',
   })
+  @ApiForbiddenResponse({ description: '수정 권한이 없음' })
   @ApiParam({ name: 'id', required: true, description: 'user id' })
   @Roles(Role.TM, Role.VM, Role.Admin)
   @UseGuards(RolesGuard)
@@ -72,14 +88,20 @@ export class UserController {
     summary: '유저 승인',
     description: '권한: 팀장/실장/관리자 | 상태값: [승인, 거절]',
   })
+  @ApiForbiddenResponse({ description: '승인 권한이 없음' })
   @ApiParam({ name: 'id', required: true, description: 'user id' })
   @Roles(Role.TM, Role.VM, Role.Admin)
   @UseGuards(RolesGuard)
   @Patch(':id/status')
   async updateUserStatus(
+    @GetUser() userId: number,
     @Param('id') id: number,
     @Body(new StatusTransformPipe()) updateUserStatusDto: UpdateUserStatusDto,
   ) {
-    return await this.userService.updateUserStatus(id, updateUserStatusDto);
+    return await this.userService.updateUserStatus(
+      id,
+      updateUserStatusDto,
+      userId,
+    );
   }
 }

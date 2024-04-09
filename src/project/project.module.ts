@@ -7,15 +7,16 @@ import { TypeOrmExModule } from 'src/common/typeorm-custom.module';
 import { PassportModule } from '@nestjs/passport';
 import { ProjectRepository } from './project.repository';
 import { UserModule } from 'src/user/user.module';
+import { SlackService } from 'src/slack/slack.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Project]),
     TypeOrmExModule.forCustomRepository([ProjectRepository]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule.register({ defaultStrategy: 'access' }),
     UserModule,
   ],
   controllers: [ProjectController],
-  providers: [ProjectService],
+  providers: [ProjectService, SlackService],
 })
 export class ProjectModule {}

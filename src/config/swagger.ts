@@ -13,7 +13,7 @@ const SwaggerCustomOptions: SwaggerCustomOptions = {
 
 export function setupSwagger(app: INestApplication): void {
   const options = new DocumentBuilder()
-    .setTitle('money_bridge')
+    .setTitle('team-task')
     .setDescription('Swagger API 서버')
     .setVersion('1.0.0')
     .addBearerAuth(

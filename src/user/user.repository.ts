@@ -8,30 +8,19 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @CustomRepository(User)
 export class UserRepository extends Repository<User> {
-  async findByField(fieldName: string, value: any): Promise<User> {
-    const query = {};
-    query[fieldName] = value;
-
-    const user = await this.findOne({ where: query });
-    return user;
+  private async findByCondition(condition: any): Promise<User | null> {
+    return await this.findOne({ where: condition });
+  }
+  async findByField(fieldName: string, value: any): Promise<User | null> {
+    return this.findByCondition({ [fieldName]: value });
   }
 
   async signUp(createUserDto: CreateUserDto): Promise<void> {
     await this.save(createUserDto);
   }
 
-  async findUserByEmail(email: string): Promise<User | null> {
-    const user = await this.findOne({ where: { email } });
-    return user;
-  }
-
-  async createUser(newUser: GoogleUser): Promise<User> {
-    const user = await this.save(newUser);
-    return user;
-  }
-
   async findUserById(id: number): Promise<User | null> {
-    const user = await this.findOne({
+    return await this.findOne({
       select: [
         'id',
         'name',
@@ -45,7 +34,6 @@ export class UserRepository extends Repository<User> {
       ],
       where: { id },
     });
-    return user;
   }
 
   async findUserByIdWithToken(id: number): Promise<User | null> {
@@ -61,7 +49,10 @@ export class UserRepository extends Repository<User> {
       relations: ['projects'],
     });
 
-    return userWithProjects.projects;
+    if (userWithProjects) {
+      return userWithProjects.projects;
+    }
+    return null;
   }
 
   async updateUserTeamInfo(
@@ -75,24 +66,8 @@ export class UserRepository extends Repository<User> {
     await this.update(userId, updateUserDto);
   }
 
-  async findUsersByTeam(teamId: number): Promise<User[]> {
-    if (teamId) {
-      return this.find({
-        select: [
-          'id',
-          'name',
-          'email',
-          'picture',
-          'team',
-          'role',
-          'status',
-          'createdAt',
-          'updatedAt',
-        ],
-        where: { team: teamId },
-      });
-    }
-
+  async findUsersByTeam(teamId?: number): Promise<User[]> {
+    const condition = teamId ? { team: teamId } : {};
     return this.find({
       select: [
         'id',
@@ -105,6 +80,7 @@ export class UserRepository extends Repository<User> {
         'createdAt',
         'updatedAt',
       ],
+      where: condition,
     });
   }
 
@@ -114,6 +90,24 @@ export class UserRepository extends Repository<User> {
       .from(User)
       .where('status = :status', { status: 'pending' })
       .andWhere('created_at<:threshold', { threshold })
+      .andWhere('team is NULL')
       .execute();
+  }
+
+  async findPendingUsers(teamId?: number): Promise<User[]> {
+    const condition = { status: 'pending', ...(teamId && { team: teamId }) };
+    return this.find({
+      where: condition,
+      select: [
+        'id',
+        'name',
+        'email',
+        'picture',
+        'team',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
   }
 }
