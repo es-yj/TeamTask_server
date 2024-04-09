@@ -26,11 +26,9 @@ export class UserService {
 
   async findUserById(id: number) {
     const user = await this.userRepository.findUserById(id);
-
     if (!user) {
       throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
     }
-
     return user;
   }
 
@@ -50,21 +48,10 @@ export class UserService {
     managerId: number,
   ) {
     const updateUser = await this.userRepository.findUserById(updateUserId);
-    if (!updateUser) {
-      throw new NotFoundException('해당 id의 유저를 찾을 수 없습니다.');
-    }
-
     const manager = await this.userRepository.findUserById(managerId);
 
-    if (updateUser.status != 'pending') {
-      throw new ConflictException('이미 승인 또는 거절된 사용자입니다.');
-    }
-
-    if (manager.role == Role.TM && updateUser.team !== manager.team) {
-      throw new UnauthorizedException(
-        'TM은 속한 팀의 사용자만 승인할 수 있습니다.',
-      );
-    }
+    this.validateUserStatus(updateUser);
+    this.validateManagerRole(manager, updateUser);
 
     await this.userRepository.updateUser(updateUserId, updateUserStatusDto);
     return { msg: '사용자 승인/거절에 성공했습니다.' };
@@ -83,15 +70,35 @@ export class UserService {
   }
 
   async getUsersByTeam(teamId?: number) {
-    // if (teamId) {
-    //   const team = await this.teamRepository.findOne({
-    //     where: { team: teamId },
-    //   });
-    //   if (!team) {
-    //     throw new NotFoundException('해당 id의 팀을 찾을 수 없습니다.');
-    //   }
-    // }
     return await this.userRepository.findUsersByTeam(teamId);
+  }
+
+  async removePendingUsers(threshold: Date) {
+    await this.userRepository.removePendingUsers(threshold);
+  }
+
+  async getTeamManagers(teamId: number) {
+    const result = await this.teamRepository
+      .createQueryBuilder('team')
+      .select('user.id', 'tmId') // "user.id"를 "tmId"라는 별칭으로 선택
+      .addSelect('user.name', 'tmName')
+      .innerJoin('team.tm', 'user') // "team" 엔터티의 "tm" 필드에 해당하는 "user" 테이블과 조인
+      .where('team.team = :teamId', { teamId }) // 바인딩된 변수를 사용하여 SQL 인젝션 방지
+      .getRawOne(); // Raw 결과 가져오기
+
+    return result ? result : null; // 결과가 있으면 tmId 반환, 없으면 null 반환
+  }
+
+  async findPendingUsers(userId: number): Promise<User[]> {
+    const user = await this.findUserById(userId);
+    if (!userId) {
+      throw new NotFoundException('해당 id를 가진 사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.role === Role.TM) {
+      return await this.userRepository.findPendingUsers(user.team);
+    }
+    return await this.userRepository.findPendingUsers();
   }
 
   // 해시화된 refresh token 저장
@@ -153,31 +160,17 @@ export class UserService {
     });
   }
 
-  async removePendingUsers(threshold: Date) {
-    await this.userRepository.removePendingUsers(threshold);
+  private validateUserStatus(user: User) {
+    if (user.status != 'pending') {
+      throw new ConflictException('이미 승인 또는 거절된 사용자입니다.');
+    }
   }
 
-  async getTeamManagers(teamId: number) {
-    const result = await this.teamRepository
-      .createQueryBuilder('team')
-      .select('user.id', 'tmId') // "user.id"를 "tmId"라는 별칭으로 선택
-      .addSelect('user.name', 'tmName')
-      .innerJoin('team.tm', 'user') // "team" 엔터티의 "tm" 필드에 해당하는 "user" 테이블과 조인
-      .where('team.team = :teamId', { teamId }) // 바인딩된 변수를 사용하여 SQL 인젝션 방지
-      .getRawOne(); // Raw 결과 가져오기
-
-    return result ? result : null; // 결과가 있으면 tmId 반환, 없으면 null 반환
-  }
-
-  async findPendingUsers(userId: number): Promise<User[]> {
-    const user = await this.findUserById(userId);
-    if (!userId) {
-      throw new NotFoundException('해당 id를 가진 사용자를 찾을 수 없습니다.');
+  private validateManagerRole(manager: User, user: User) {
+    if (manager.role == Role.TM && user.team !== manager.team) {
+      throw new UnauthorizedException(
+        'TM은 속한 팀의 사용자만 승인할 수 있습니다.',
+      );
     }
-
-    if (user.role === Role.TM) {
-      return await this.userRepository.findPendingUsers(user.team);
-    }
-    return await this.userRepository.findPendingUsers();
   }
 }
