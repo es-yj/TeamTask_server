@@ -7,9 +7,11 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
 import { Role } from '../enum/roles.enum';
 import { Team } from './team.entity';
+import { ProjectManager } from 'src/project/entities/project-manager.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -40,15 +42,21 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   currentRefreshTokenExp: Date;
 
+  @Column({ type: 'date', nullable: true })
+  effectiveDate: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Project, (project) => project.manager)
+  @ManyToMany(() => Project, (project) => project.managers)
   projects: Project[];
 
   @OneToMany(() => Team, (team) => team.tm)
   teams: Team[];
+
+  @OneToMany(() => ProjectManager, (ProjectManager) => ProjectManager.user)
+  projectManagers: ProjectManager[];
 }

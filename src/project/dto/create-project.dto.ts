@@ -22,4 +22,9 @@ export class CreateProjectDto {
   @IsString()
   @IsOptional()
   slackUrl: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  notionUrl: string;
 }

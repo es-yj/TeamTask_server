@@ -1,23 +1,60 @@
 import { Repository } from 'typeorm';
 import { CustomRepository } from 'src/common/decorators/typeorm-repository.decorator';
 import { Project } from './entities/project.entity';
-import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectManager } from './entities/project-manager.entity';
 
 @CustomRepository(Project)
 export class ProjectRepository extends Repository<Project> {
-  async createProject(createProjectDto: CreateProjectDto) {
-    const newProject = await this.create(createProjectDto);
+  async createProject(project: Project) {
+    const newProject = await this.create(project);
     return await this.save(newProject);
   }
 
   async findAllProjects(): Promise<Project[] | null> {
-    const projects = await this.find();
+    const projects = await this.createQueryBuilder('project')
+      .leftJoinAndSelect('project.managers', 'user')
+      .select([
+        'project.id',
+        'project.projectId',
+        'project.client',
+        'project.creationStage',
+        'project.status',
+        'project.progressStage',
+        'project.buildStage',
+        'project.slackUrl',
+        'project.createdAt',
+        'project.updatedAt',
+        'user.id',
+        'user.name',
+        'user.role',
+        'user.team',
+      ])
+      .getMany();
     return projects;
   }
 
   async findProjectById(id: number): Promise<Project | null> {
-    const project = await this.findOne({ where: { id } });
+    const project = await this.createQueryBuilder('project')
+      .leftJoinAndSelect('project.managers', 'user')
+      .where('project.id=:id', { id })
+      .select([
+        'project.id',
+        'project.projectId',
+        'project.client',
+        'project.creationStage',
+        'project.status',
+        'project.progressStage',
+        'project.buildStage',
+        'project.slackUrl',
+        'project.createdAt',
+        'project.updatedAt',
+        'user.id',
+        'user.name',
+        'user.role',
+        'user.team',
+      ])
+      .getOne();
     return project;
   }
 
@@ -25,7 +62,14 @@ export class ProjectRepository extends Repository<Project> {
     return await this.update(id, updateProjectDto);
   }
 
-  async removeProject(id: number) {
-    return await this.delete(id);
+  async removeProject(id: number): Promise<any> {
+    await this.manager
+      .createQueryBuilder()
+      .delete()
+      .from(ProjectManager)
+      .where('projectId = :id', { id })
+      .execute();
+
+    return this.delete(id);
   }
 }

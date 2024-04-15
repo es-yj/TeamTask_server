@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -10,40 +9,79 @@ import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProjectRepository } from './project.repository';
 import { SlackService } from 'src/slack/slack.service';
+import { Project } from './entities/project.entity';
+import { ProjectManager } from './entities/project-manager.entity';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(ProjectRepository)
     private readonly projectRepository: ProjectRepository,
+    @InjectRepository(ProjectManager)
+    private managerRepository: Repository<ProjectManager>,
     private readonly userService: UserService,
     private readonly slackService: SlackService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async createProject(createProjectDto: CreateProjectDto) {
-    const { managerId } = createProjectDto;
-    const manager = await this.userService.findUserById(managerId);
+    const { managerId, ...projectData } = createProjectDto;
+    const managerUser = await this.userService.findUserById(managerId);
 
-    if (!manager) {
+    if (!managerUser) {
       throw new NotFoundException('해당 id의 담당자를 찾을 수 없습니다.');
     }
 
-    const newProject =
-      await this.projectRepository.createProject(createProjectDto);
+    const savedProject = await this.handleDatabaseOperation(async (manager) => {
+      const newProject = new Project();
+      Object.assign(newProject, projectData);
+      const savedProject = await this.projectRepository.save(newProject);
+
+      const projectManager = new ProjectManager();
+      projectManager.projectId = savedProject.id;
+      projectManager.userId = managerUser.id;
+      await this.managerRepository.save(projectManager);
+
+      return savedProject;
+    });
 
     await this.slackService.sendSlackMessage(
-      `🟢 프로젝트 생성 (${manager.name}님)\n  - 프로젝트 ID: ${newProject.projectId}\n  - 고객사: ${newProject.client} 프로젝트가 생성되었습니다.`,
+      `🟢 프로젝트 생성 (${managerUser.name}님)\n  - 프로젝트 ID: ${savedProject.projectId}\n  - 고객사: ${savedProject.client} 프로젝트가 생성되었습니다.`,
     );
+
     return { msg: '프로젝트 생성에 성공하였습니다.' };
   }
 
+  // 중복된 트랜잭션 처리 로직을 별도의 메소드로 분리
+  private async handleDatabaseOperation(
+    operation: (manager: EntityManager) => Promise<any>,
+  ) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const result = await operation(queryRunner.manager);
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        '데이터베이스 작업 중 오류가 발생했습니다.',
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async findAllProjects() {
-    const projects = this.projectRepository.findAllProjects();
+    const projects = await this.projectRepository.findAllProjects();
     return projects;
   }
 
   async getProjectDetail(id: number) {
-    const project = this.projectRepository.findProjectById(id);
+    const project = await this.projectRepository.findProjectById(id);
     if (!project) {
       throw new NotFoundException('해당 id의 프로젝트를 찾을 수 없습니다.');
     }
@@ -77,9 +115,7 @@ export class ProjectService {
   async removeProject(id: number) {
     const deletionResult = await this.projectRepository.removeProject(id);
     if (deletionResult.affected === 0) {
-      throw new NotFoundException(
-        `ID: ${id}인 프로젝트를 찾을 수 없어 삭제할 수 없습니다.`,
-      );
+      throw new NotFoundException(`해당 id의 프로젝트를 찾을 수 없습니다.`);
     }
 
     return { msg: '프로젝트 삭제에 성공했습니다.' };
