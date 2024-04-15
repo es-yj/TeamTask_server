@@ -66,7 +66,7 @@ export class UserRepository extends Repository<User> {
     await this.update(userId, updateUserDto);
   }
 
-  async findUsersByTeam(teamId?: number): Promise<User[]> {
+  async findUsersByTeam(teamId?: string): Promise<User[]> {
     const condition = teamId ? { team: teamId } : {};
     return this.find({
       select: [
@@ -94,7 +94,7 @@ export class UserRepository extends Repository<User> {
       .execute();
   }
 
-  async findPendingUsers(teamId?: number): Promise<User[]> {
+  async findPendingUsers(teamId?: string): Promise<User[]> {
     const condition = { status: 'pending', ...(teamId && { team: teamId }) };
     return this.find({
       where: condition,

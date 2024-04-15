@@ -31,7 +31,7 @@ export class User extends BaseEntity {
   role?: Role;
 
   @Column({ nullable: true })
-  team?: number;
+  team?: string;
 
   @Column({ nullable: true, default: 'pending' })
   status: string;

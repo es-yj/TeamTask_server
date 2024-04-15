@@ -41,7 +41,7 @@ export class UserController {
   @ApiOperation({ summary: '유저 목록 반환(팀별 필터 가능)' })
   @ApiQuery({ name: 'teamId', required: false, description: 'team id' })
   @Get()
-  async getUsersByTeam(@Query('teamId') teamId?: number) {
+  async getUsersByTeam(@Query('teamId') teamId?: string) {
     return this.userService.getUsersByTeam(teamId);
   }
 

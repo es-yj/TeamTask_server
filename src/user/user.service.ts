@@ -69,7 +69,7 @@ export class UserService {
     return userWithProjects;
   }
 
-  async getUsersByTeam(teamId?: number) {
+  async getUsersByTeam(teamId?: string) {
     return await this.userRepository.findUsersByTeam(teamId);
   }
 
@@ -77,7 +77,7 @@ export class UserService {
     await this.userRepository.removePendingUsers(threshold);
   }
 
-  async getTeamManagers(teamId: number) {
+  async getTeamManagers(teamId: string) {
     const result = await this.teamRepository
       .createQueryBuilder('team')
       .select('user.id', 'tmId') // "user.id"를 "tmId"라는 별칭으로 선택
