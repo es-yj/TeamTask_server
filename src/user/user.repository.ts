@@ -5,6 +5,7 @@ import { Project } from 'src/project/entities/project.entity';
 import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
 import { UpdateTeamInfoDto } from 'src/auth/dto/update-team-info.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserStatus } from './enum/status.enum';
 
 @CustomRepository(User)
 export class UserRepository extends Repository<User> {
@@ -67,7 +68,9 @@ export class UserRepository extends Repository<User> {
   }
 
   async findUsersByTeam(teamId?: string): Promise<User[]> {
-    const condition = teamId ? { team: teamId } : {};
+    const condition: any = teamId
+      ? { team: teamId, status: UserStatus.Active }
+      : { status: UserStatus.Active };
     return this.find({
       select: [
         'id',
@@ -95,7 +98,10 @@ export class UserRepository extends Repository<User> {
   }
 
   async findPendingUsers(teamId?: string): Promise<User[]> {
-    const condition = { status: 'pending', ...(teamId && { team: teamId }) };
+    const condition = {
+      status: UserStatus.Pending,
+      ...(teamId && { team: teamId }),
+    };
     return this.find({
       where: condition,
       select: [

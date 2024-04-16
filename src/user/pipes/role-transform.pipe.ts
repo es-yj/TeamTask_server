@@ -15,6 +15,10 @@ export class RoleTransformPipe implements PipeTransform {
       value.role = Role.VM;
     } else if (value.role === '관리자') {
       value.role = Role.Admin;
+    } else if (value.role === 'Jr.PM') {
+      value.role = Role.JrPM;
+    } else if (value.role === 'Sr.PM') {
+      value.role = Role.SrPM;
     }
 
     if (!(value.role in Role)) {

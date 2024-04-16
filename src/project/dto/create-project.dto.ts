@@ -27,4 +27,9 @@ export class CreateProjectDto {
   @IsString()
   @IsOptional()
   notionUrl: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  salesManager: string;
 }

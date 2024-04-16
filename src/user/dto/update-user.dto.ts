@@ -11,7 +11,7 @@ export class UpdateUserDto {
   @ApiProperty({
     description: '직책',
     required: false,
-    enum: ['PA', 'PM', '팀장', '실장', '관리자'],
+    enum: ['PA', 'Sr.PM', 'Jr.PM', '팀장', '실장', '관리자'],
   })
   @IsString()
   @IsOptional()

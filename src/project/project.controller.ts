@@ -59,7 +59,7 @@ export class ProjectController {
     summary: '프로젝트 수정',
     description: '권한: PM, 팀장, 실장, 관리자',
   })
-  @Roles(Role.PM, Role.TM, Role.VM, Role.Admin)
+  @Roles(Role.SrPM, Role.JrPM, Role.TM, Role.VM, Role.Admin)
   @UseGuards(RolesGuard)
   @Patch(':id')
   async updateProject(

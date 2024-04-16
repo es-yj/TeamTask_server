@@ -1,6 +1,7 @@
 export enum Role {
   PA = 'PA',
-  PM = 'PM',
+  SrPM = 'SrPM',
+  JrPM = 'JrPM',
   TM = 'TM',
   VM = 'VM',
   Admin = 'Admin',

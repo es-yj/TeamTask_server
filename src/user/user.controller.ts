@@ -70,7 +70,8 @@ export class UserController {
 
   @ApiOperation({
     summary: '유저 정보 수정',
-    description: '권한: 팀장/실장/관리자 | 상태값: [PA,PM,팀장,실장,관리자]',
+    description:
+      '권한: 팀장/실장/관리자 | 상태값: [PA,Sr.PM,Jr.PM,팀장,실장,관리자]',
   })
   @ApiForbiddenResponse({ description: '수정 권한이 없음' })
   @ApiParam({ name: 'id', required: true, description: 'user id' })

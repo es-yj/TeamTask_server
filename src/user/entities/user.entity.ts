@@ -12,6 +12,7 @@ import {
 import { Role } from '../enum/roles.enum';
 import { Team } from './team.entity';
 import { ProjectManager } from 'src/project/entities/project-manager.entity';
+import { UserStatus } from '../enum/status.enum';
 
 @Entity()
 export class User extends BaseEntity {
@@ -33,8 +34,13 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   team?: string;
 
-  @Column({ nullable: true, default: 'pending' })
-  status: string;
+  @Column({
+    type: 'enum',
+    nullable: true,
+    default: 'pending',
+    enum: UserStatus,
+  })
+  status: UserStatus;
 
   @Column({ nullable: true })
   currentRefreshToken?: string;
@@ -42,8 +48,8 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   currentRefreshTokenExp: Date;
 
-  @Column({ type: 'date', nullable: true })
-  effectiveDate: Date;
+  @Column({ type: 'varchar', nullable: true })
+  effectiveDate: string;
 
   @CreateDateColumn()
   createdAt: Date;

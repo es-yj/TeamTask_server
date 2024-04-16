@@ -4,18 +4,18 @@ import {
   ArgumentMetadata,
   BadRequestException,
 } from '@nestjs/common';
-import { Status } from '../enum/status.enum';
+import { UserStatus } from '../enum/status.enum';
 
 @Injectable()
 export class StatusTransformPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
     if (value.status === '승인') {
-      value.status = Status.approved;
+      value.status = UserStatus.Active;
     } else if (value.status === '거절') {
-      value.status = Status.rejected;
+      value.status = UserStatus.Rejected;
     }
 
-    if (!(value.status in Status)) {
+    if (!(value.status in UserStatus)) {
       throw new BadRequestException(
         `${value.status}은 유효한 상태 값이 아닙니다.`,
       );

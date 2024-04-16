@@ -27,6 +27,9 @@ export class Project extends BaseEntity {
   client: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
+  salesManager: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
   status: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
