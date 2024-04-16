@@ -35,10 +35,8 @@ export class User extends BaseEntity {
   team?: string;
 
   @Column({
-    type: 'enum',
     nullable: true,
     default: 'pending',
-    enum: UserStatus,
   })
   status: UserStatus;
 
@@ -49,7 +47,7 @@ export class User extends BaseEntity {
   currentRefreshTokenExp: Date;
 
   @Column({ type: 'varchar', nullable: true })
-  effectiveDate: string;
+  modifiedDate: string;
 
   @CreateDateColumn()
   createdAt: Date;

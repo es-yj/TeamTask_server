@@ -79,7 +79,8 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Patch(':id')
   async updateUser(
-    @Body(new RoleTransformPipe()) updateUserDto: UpdateUserDto,
+    @Body(new RoleTransformPipe(), new StatusTransformPipe())
+    updateUserDto: UpdateUserDto,
     @Param('id') id: number,
   ) {
     return await this.userService.updateUser(id, updateUserDto);
