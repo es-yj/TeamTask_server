@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { CustomRepository } from 'src/common/decorators/typeorm-repository.decorator';
 import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
@@ -69,8 +69,8 @@ export class UserRepository extends Repository<User> {
 
   async findUsersByTeam(teamId?: string): Promise<User[]> {
     const condition: any = teamId
-      ? { team: teamId, status: UserStatus.Active }
-      : { status: UserStatus.Active };
+      ? { team: teamId, status: Not(UserStatus.Pending) }
+      : { status: Not(UserStatus.Pending) };
     return this.find({
       select: [
         'id',
