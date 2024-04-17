@@ -4,6 +4,11 @@ import { Role } from '../enum/roles.enum';
 import { UserStatus } from '../enum/status.enum';
 
 export class UpdateUserDto {
+  @ApiProperty({ description: '이름', required: false })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
   @ApiProperty({ description: '팀 정보', required: false })
   @IsOptional()
   team?: string;
