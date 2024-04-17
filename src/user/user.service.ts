@@ -69,8 +69,8 @@ export class UserService {
     return userWithProjects;
   }
 
-  async getUsersByTeam(teamId?: string) {
-    return await this.userRepository.findUsersByTeam(teamId);
+  async getUsersByTeam(teamId?: string, name?: string) {
+    return await this.userRepository.findUsersByTeam(teamId, name);
   }
 
   async removePendingUsers(threshold: Date) {

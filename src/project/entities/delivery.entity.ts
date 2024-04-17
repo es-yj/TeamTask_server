@@ -14,16 +14,16 @@ export class Delivery extends BaseEntity {
   projectId: number;
 
   @Column()
-  finalDate: Date;
+  deliveryDate: Date;
 
   @Column()
   unit: string;
 
   @Column()
-  totalCount: number;
+  totalDeliveryCount: number;
 
   @Column()
-  accumulatedCount: number;
+  deliveryCount: number;
 
   @Column()
   productionCount: number;

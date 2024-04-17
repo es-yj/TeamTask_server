@@ -14,13 +14,19 @@ export class Contract extends BaseEntity {
   projectId: number;
 
   @Column()
-  period: string;
-
-  @Column()
   amount: number;
 
   @Column()
-  type: string;
+  projectForm: string;
+
+  @Column()
+  dataForm: string;
+
+  @Column()
+  startDate: Date;
+
+  @Column()
+  endDate: Date;
 
   @OneToOne(() => Project)
   @JoinColumn({ name: 'project_id' })

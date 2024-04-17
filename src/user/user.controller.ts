@@ -40,9 +40,13 @@ export class UserController {
 
   @ApiOperation({ summary: '유저 목록 반환(팀별 필터 가능)' })
   @ApiQuery({ name: 'teamId', required: false, description: 'team id' })
+  @ApiQuery({ name: 'name', required: false, description: '검색할 이름' })
   @Get()
-  async getUsersByTeam(@Query('teamId') teamId?: string) {
-    return this.userService.getUsersByTeam(teamId);
+  async getUsersByTeam(
+    @Query('teamId') teamId?: string,
+    @Query('name') name?: string,
+  ) {
+    return this.userService.getUsersByTeam(teamId, name);
   }
 
   @ApiOperation({ summary: '유저가 속한 프로젝트 조회' })

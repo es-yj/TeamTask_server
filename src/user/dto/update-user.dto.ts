@@ -6,8 +6,7 @@ import { UserStatus } from '../enum/status.enum';
 export class UpdateUserDto {
   @ApiProperty({ description: '팀 정보', required: false })
   @IsOptional()
-  @IsNumber()
-  team?: number;
+  team?: string;
 
   @ApiProperty({
     description: '직책',

@@ -1,10 +1,9 @@
-import { Not, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { CustomRepository } from 'src/common/decorators/typeorm-repository.decorator';
 import { User } from './entities/user.entity';
 import { Project } from 'src/project/entities/project.entity';
-import { CreateUserDto, GoogleUser } from 'src/auth/dto/googleuser.dto';
+import { CreateUserDto } from 'src/auth/dto/googleuser.dto';
 import { UpdateTeamInfoDto } from 'src/auth/dto/update-team-info.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus } from './enum/status.enum';
 
 @CustomRepository(User)
@@ -67,10 +66,15 @@ export class UserRepository extends Repository<User> {
     await this.update(userId, updateUserDto);
   }
 
-  async findUsersByTeam(teamId?: string): Promise<User[]> {
-    const condition: any = teamId
-      ? { team: teamId, status: Not(UserStatus.Pending) }
-      : { status: Not(UserStatus.Pending) };
+  async findUsersByTeam(teamId?: string, name?: string): Promise<User[]> {
+    const condition: any = { status: Not(UserStatus.Pending) };
+
+    if (teamId) {
+      condition.team = teamId;
+    }
+    if (name) {
+      condition.name = Like(`%${name}%`);
+    }
     return this.find({
       select: [
         'id',
