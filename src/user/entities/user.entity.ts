@@ -7,9 +7,12 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
 import { Role } from '../enum/roles.enum';
 import { Team } from './team.entity';
+import { ProjectManager } from 'src/project/entities/project-manager.entity';
+import { UserStatus } from '../enum/status.enum';
 
 @Entity()
 export class User extends BaseEntity {
@@ -29,10 +32,13 @@ export class User extends BaseEntity {
   role?: Role;
 
   @Column({ nullable: true })
-  team?: number;
+  team?: string;
 
-  @Column({ nullable: true, default: 'pending' })
-  status: string;
+  @Column({
+    nullable: true,
+    default: 'pending',
+  })
+  status: UserStatus;
 
   @Column({ nullable: true })
   currentRefreshToken?: string;
@@ -40,15 +46,21 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   currentRefreshTokenExp: Date;
 
+  @Column({ type: 'varchar', nullable: true })
+  modifiedDate: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Project, (project) => project.manager)
+  @ManyToMany(() => Project, (project) => project.managers)
   projects: Project[];
 
   @OneToMany(() => Team, (team) => team.tm)
   teams: Team[];
+
+  @OneToMany(() => ProjectManager, (ProjectManager) => ProjectManager.user)
+  projectManagers: ProjectManager[];
 }

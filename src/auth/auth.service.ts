@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from 'src/user/entities/user.entity';
 import { UpdateTeamInfoDto } from './dto/update-team-info.dto';
 import { UserService } from 'src/user/user.service';
+import { SseService } from 'src/sse/sse.service';
 
 @Injectable()
 export class AuthService {
@@ -14,12 +15,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
+    private readonly sseService: SseService,
   ) {}
 
   async findOrSaveUser(googleReq: GoogleRequest) {
     try {
       const { email } = googleReq.user;
-      let user = await this.userRepository.findUserByEmail(email);
+      let user = await this.userRepository.findByField('email', email);
       const url = user
         ? 'http://localhost:3000/'
         : 'http://localhost:3000/account/team/';
@@ -37,6 +39,15 @@ export class AuthService {
   }
 
   async updateTeamInfo(userId, updateTeamInfoDto: UpdateTeamInfoDto) {
+    const { team } = updateTeamInfoDto;
+
+    const newUser = await this.userService.findUserById(userId);
+    const manager = await this.userService.getTeamManagers(team);
+    if (manager) {
+      await this.sseService.notifyTeamManagers(manager.tmId, {
+        message: `${newUser.name}님이 ${team}팀 승인을 요청했습니다.`,
+      });
+    }
     return await this.userRepository.updateUserTeamInfo(
       userId,
       updateTeamInfoDto,

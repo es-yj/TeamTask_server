@@ -7,6 +7,8 @@ import { GoogleStrategy } from './strategy/google.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { RefreshStrategy } from './strategy/refresh.strategy';
+import { SseService } from 'src/sse/sse.service';
+import { SseController } from 'src/sse/sse.controller';
 
 @Module({
   imports: [
@@ -15,6 +17,12 @@ import { RefreshStrategy } from './strategy/refresh.strategy';
     PassportModule.register({ defaultStrategy: 'access' }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy, RefreshStrategy],
+  providers: [
+    AuthService,
+    SseService,
+    GoogleStrategy,
+    JwtStrategy,
+    RefreshStrategy,
+  ],
 })
 export class AuthModule {}

@@ -40,9 +40,13 @@ export class UserController {
 
   @ApiOperation({ summary: '유저 목록 반환(팀별 필터 가능)' })
   @ApiQuery({ name: 'teamId', required: false, description: 'team id' })
+  @ApiQuery({ name: 'name', required: false, description: '검색할 이름' })
   @Get()
-  async getUsersByTeam(@Query('teamId') teamId?: number) {
-    return this.userService.getUsersByTeam(teamId);
+  async getUsersByTeam(
+    @Query('teamId') teamId?: string,
+    @Query('name') name?: string,
+  ) {
+    return this.userService.getUsersByTeam(teamId, name);
   }
 
   @ApiOperation({ summary: '유저가 속한 프로젝트 조회' })
@@ -70,7 +74,8 @@ export class UserController {
 
   @ApiOperation({
     summary: '유저 정보 수정',
-    description: '권한: 팀장/실장/관리자 | 상태값: [PA,PM,팀장,실장,관리자]',
+    description:
+      '권한: 팀장/실장/관리자 | 상태값: [PA,Sr.PM,Jr.PM,팀장,실장,관리자]',
   })
   @ApiForbiddenResponse({ description: '수정 권한이 없음' })
   @ApiParam({ name: 'id', required: true, description: 'user id' })
@@ -78,7 +83,8 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Patch(':id')
   async updateUser(
-    @Body(new RoleTransformPipe()) updateUserDto: UpdateUserDto,
+    @Body(new RoleTransformPipe(), new StatusTransformPipe())
+    updateUserDto: UpdateUserDto,
     @Param('id') id: number,
   ) {
     return await this.userService.updateUser(id, updateUserDto);

@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeormConfig } from './config/typeorm.config';
 import { ProjectModule } from './project/project.module';
+import { SseController } from './sse/sse.controller';
+import { SseService } from './sse/sse.service';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { ProjectModule } from './project/project.module';
     UserModule,
     ProjectModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, SseController],
+  providers: [AppService, SseService],
 })
 export class AppModule {}

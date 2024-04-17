@@ -19,6 +19,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { Role } from 'src/user/enum/roles.enum';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @ApiTags('Project')
 @ApiBearerAuth('accessToken')
@@ -27,7 +30,12 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
-  @ApiOperation({ summary: '프로젝트 생성' })
+  @ApiOperation({
+    summary: '프로젝트 생성',
+    description: '권한: 팀장, 실장, 관리자',
+  })
+  @Roles(Role.TM, Role.VM, Role.Admin)
+  @UseGuards(RolesGuard)
   @Post()
   async createProject(@Body() createProjectDto: CreateProjectDto) {
     return await this.projectService.createProject(createProjectDto);
@@ -47,7 +55,12 @@ export class ProjectController {
   }
 
   @ApiParam({ name: 'id', required: true, description: 'project id' })
-  @ApiOperation({ summary: '프로젝트 수정' })
+  @ApiOperation({
+    summary: '프로젝트 수정',
+    description: '권한: PM, 팀장, 실장, 관리자',
+  })
+  @Roles(Role.SrPM, Role.JrPM, Role.TM, Role.VM, Role.Admin)
+  @UseGuards(RolesGuard)
   @Patch(':id')
   async updateProject(
     @Param('id') id: string,
@@ -62,7 +75,9 @@ export class ProjectController {
   }
 
   @ApiParam({ name: 'id', required: true, description: 'project id' })
-  @ApiOperation({ summary: '프로젝트 삭제' })
+  @ApiOperation({ summary: '프로젝트 삭제', description: '팀장, 실장, 관리자' })
+  @Roles(Role.TM, Role.VM, Role.Admin)
+  @UseGuards(RolesGuard)
   @Delete(':id')
   async removeProject(@Param('id') id: string) {
     return await this.projectService.removeProject(+id);

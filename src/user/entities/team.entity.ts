@@ -13,7 +13,7 @@ export class Team {
   id: number;
 
   @Column({ nullable: false, unique: true })
-  team: number;
+  team: string;
 
   @OneToOne(() => User)
   @JoinColumn({ name: 'TM' })

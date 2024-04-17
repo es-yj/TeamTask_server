@@ -7,6 +7,8 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
@@ -14,9 +16,6 @@ import { User } from 'src/user/entities/user.entity';
 export class Project extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  managerId: number;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   creationStage: string;
@@ -26,6 +25,9 @@ export class Project extends BaseEntity {
 
   @Column({ type: 'varchar', length: 255 })
   client: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  salesManager: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   status: string;
@@ -39,13 +41,20 @@ export class Project extends BaseEntity {
   @Column()
   slackUrl: string;
 
+  @Column({ nullable: true })
+  notionUrl?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.id)
-  @JoinColumn({ name: 'manager_id' })
-  manager: User;
+  @ManyToMany(() => User, (user) => user.projects)
+  @JoinTable({
+    name: 'project_manager',
+    joinColumn: { name: 'project_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' },
+  })
+  managers: User[];
 }
