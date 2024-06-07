@@ -16,12 +16,15 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Role } from 'src/user/enum/roles.enum';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Project } from './entities/project.entity';
+import { GetProjectDto } from './dto/get-project.dto';
 
 @ApiTags('Project')
 @ApiBearerAuth('accessToken')
@@ -42,6 +45,7 @@ export class ProjectController {
   }
 
   @ApiOperation({ summary: '전체 프로젝트 조회' })
+  @ApiResponse({ status: 200, type: GetProjectDto })
   @Get()
   async findAllProjects() {
     return await this.projectService.findAllProjects();
@@ -49,6 +53,7 @@ export class ProjectController {
 
   @ApiParam({ name: 'id', required: true, description: 'project id' })
   @ApiOperation({ summary: '개별 프로젝트 조회' })
+  @ApiResponse({ status: 200, type: GetProjectDto })
   @Get(':id')
   async getProjectDetail(@Param('id') id: string) {
     return this.projectService.getProjectDetail(+id);
